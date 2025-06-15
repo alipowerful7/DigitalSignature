@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signature</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>امضای دیجیتال</h1>
+        <canvas id="signature"></canvas>
+
+        <div class="tools">
+            <label>
+                رنگ قلم:
+                <input type="color" id="colorPicker" value="#000000">
+            </label>
+
+            <label>
+                ضخامت:
+                <input type="range" id="thickness" min="1" max="10" value="2">
+            </label>
+
+            <button id="clear">پاک کردن</button>
+            <button id="download">دانلود</button>
+        </div>
+    </div>
+    <script src="scripts/app.js"></script>
+</body>
+
+</html>
