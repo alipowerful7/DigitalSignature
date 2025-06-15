@@ -13,6 +13,11 @@ let currentPath = "";
 // تصویر پس‌زمینه بارگذاری شده
 let bgImage = null;
 
+// عناصر جدید برای تاریخ و زمان
+const showDateTimeCheckbox = document.getElementById("showDateTime");
+const positionLabel = document.getElementById("positionLabel");
+const dateTimePositionSelect = document.getElementById("dateTimePosition");
+
 function resizeCanvas() {
     const ratio = window.devicePixelRatio || 1;
     canvas.width = canvas.offsetWidth * ratio;
@@ -34,10 +39,8 @@ function redrawAll() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (bgImage) {
-        // اندازه تصویر رو به ابعاد canvas می‌کشیم (می‌توانید تغییر دهید برای حفظ نسبت)
         ctx.drawImage(bgImage, 0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
     } else {
-        // پس‌زمینه سفید اگر تصویری نیست
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
@@ -130,24 +133,14 @@ document.getElementById("thickness").addEventListener("input", (e) => {
     ctx.lineWidth = penThickness;
 });
 document.getElementById("clear").addEventListener("click", () => {
-    // پاک کردن امضاها
     svgPaths = [];
-
-    // پاک کردن تصویر پس‌زمینه
     bgImage = null;
-
-    // پاک کردن وضعیت کشیدن
     drawing = false;
     currentPath = "";
-
-    // پاک کردن مقدار فایل آپلود شده برای امکان آپلود مجدد همان یا فایل جدید
     document.getElementById("bgUpload").value = "";
-
-    // رندر مجدد (پس‌زمینه سفید)
     redrawAll();
 });
 
-// بارگذاری تصویر پس زمینه
 document.getElementById("bgUpload").addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -164,11 +157,17 @@ document.getElementById("bgUpload").addEventListener("change", (e) => {
     reader.readAsDataURL(file);
 });
 
+// کنترل نمایش select موقعیت با تغییر چک‌باکس
+showDateTimeCheckbox.addEventListener("change", () => {
+    positionLabel.style.display = showDateTimeCheckbox.checked ? "inline-block" : "none";
+});
+
+// دانلود
 document.getElementById("download").addEventListener("click", () => {
     const format = document.getElementById("format").value;
 
     if (format === "svg") {
-        // دانلود SVG - در این حالت پس‌زمینه تصویر در SVG لحاظ نمی‌شود.
+        // دانلود SVG (بدون پس‌زمینه و تاریخ)
         const width = canvas.offsetWidth;
         const height = canvas.offsetHeight;
 
@@ -187,13 +186,13 @@ document.getElementById("download").addEventListener("click", () => {
         link.click();
         URL.revokeObjectURL(url);
     } else {
-        // دانلود به صورت PNG/JPEG/WebP همراه پس‌زمینه
+        // دانلود به صورت PNG/JPEG/WebP همراه پس‌زمینه و تاریخ و ساعت (در صورت فعال بودن)
         const tempCanvas = document.createElement("canvas");
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
         const tempCtx = tempCanvas.getContext("2d");
 
-        // رسم پس زمینه
+        // رسم پس‌زمینه
         if (bgImage) {
             tempCtx.drawImage(bgImage, 0, 0, tempCanvas.width, tempCanvas.height);
         } else {
@@ -219,6 +218,45 @@ document.getElementById("download").addEventListener("click", () => {
             tempCtx.stroke();
         });
 
+        // درج تاریخ و ساعت امضا به صورت فارسی اگر فعال باشد
+        if (showDateTimeCheckbox.checked) {
+            tempCtx.fillStyle = "black";
+            tempCtx.font = "16px Vazirmatn, sans-serif";
+            tempCtx.textBaseline = "top";
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('fa-IR');
+            const timeStr = now.toLocaleTimeString('fa-IR');
+            const text = `امضا شده در: ${dateStr} ساعت: ${timeStr}`;
+
+            const padding = 10;
+            let x = padding;
+            let y = padding;
+
+            // موقعیت متن بر اساس انتخاب کاربر
+            switch (dateTimePositionSelect.value) {
+                case "top-right":
+                    x = tempCanvas.width - tempCtx.measureText(text).width - padding;
+                    y = padding;
+                    break;
+                case "top-left":
+                    x = padding;
+                    y = padding;
+                    break;
+                case "bottom-right":
+                    x = tempCanvas.width - tempCtx.measureText(text).width - padding;
+                    y = tempCanvas.height - 20 - padding;
+                    break;
+                case "bottom-left":
+                    x = padding;
+                    y = tempCanvas.height - 20 - padding;
+                    break;
+            }
+
+            tempCtx.fillText(text, x, y);
+        }
+
+        // ایجاد لینک دانلود و کلیک خودکار
         const link = document.createElement("a");
         link.download = `signature.${format}`;
         link.href = tempCanvas.toDataURL(`image/${format}`);

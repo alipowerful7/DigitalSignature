@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>امضای دیجیتال با پس‌زمینه</title>
+    <title>امضای دیجیتال با پس‌زمینه و تاریخ</title>
     <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
     <div class="container">
-        <h1>امضای دیجیتال با پس‌زمینه دلخواه</h1>
+        <h1>امضای دیجیتال با پس‌زمینه دلخواه و تاریخ</h1>
 
         <!-- انتخاب تصویر پس‌زمینه -->
         <label for="bgUpload"
@@ -39,6 +39,21 @@
                     <option value="jpeg">JPEG</option>
                     <option value="webp">WEBP</option>
                     <option value="svg">SVG</option>
+                </select>
+            </label>
+
+            <label>
+                <input type="checkbox" id="showDateTime" />
+                درج تاریخ و ساعت روی تصویر
+            </label>
+
+            <label id="positionLabel" style="display:none;">
+                موقعیت تاریخ و ساعت:
+                <select id="dateTimePosition" class="custom-select">
+                    <option value="top-right">بالا راست</option>
+                    <option value="top-left">بالا چپ</option>
+                    <option value="bottom-right" selected>پایین راست</option>
+                    <option value="bottom-left">پایین چپ</option>
                 </select>
             </label>
 
