@@ -4,15 +4,17 @@ const ctx = canvas.getContext("2d");
 let drawing = false;
 let lastX = 0;
 let lastY = 0;
-
 let penColor = "#000000";
 let penThickness = 2;
 
-// ریسپانسیو کردن بوم
+let svgPaths = [];
+let currentPath = "";
+
 function resizeCanvas() {
     const ratio = window.devicePixelRatio || 1;
     canvas.width = canvas.offsetWidth * ratio;
     canvas.height = canvas.offsetHeight * ratio;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(ratio, ratio);
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -22,61 +24,59 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
-// شروع نقاشی
-canvas.addEventListener("mousedown", (e) => {
+function startDraw(x, y) {
     drawing = true;
-    const rect = canvas.getBoundingClientRect();
-    lastX = e.clientX - rect.left;
-    lastY = e.clientY - rect.top;
-});
+    lastX = x;
+    lastY = y;
+    currentPath = `M ${x} ${y}`;
+}
 
-// ادامه نقاشی (در کل صفحه، حتی خارج از بوم)
-document.addEventListener("mousemove", (e) => {
+function draw(x, y) {
     if (!drawing) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
     ctx.beginPath();
     ctx.moveTo(lastX, lastY);
     ctx.lineTo(x, y);
     ctx.stroke();
     lastX = x;
     lastY = y;
-});
+    currentPath += ` L ${x} ${y}`;
+}
 
-document.addEventListener("mouseup", () => {
+function endDraw() {
+    if (currentPath) {
+        svgPaths.push({
+            d: currentPath,
+            color: penColor,
+            width: penThickness,
+        });
+    }
     drawing = false;
-});
+    currentPath = "";
+}
 
-// موبایل
+canvas.addEventListener("mousedown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    startDraw(e.clientX - rect.left, e.clientY - rect.top);
+});
+document.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    draw(e.clientX - rect.left, e.clientY - rect.top);
+});
+document.addEventListener("mouseup", endDraw);
+
 canvas.addEventListener("touchstart", (e) => {
-    drawing = true;
     const touch = e.touches[0];
     const rect = canvas.getBoundingClientRect();
-    lastX = touch.clientX - rect.left;
-    lastY = touch.clientY - rect.top;
+    startDraw(touch.clientX - rect.left, touch.clientY - rect.top);
 });
-
 canvas.addEventListener("touchmove", (e) => {
     if (!drawing) return;
     e.preventDefault();
     const touch = e.touches[0];
     const rect = canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-
-    ctx.beginPath();
-    ctx.moveTo(lastX, lastY);
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    lastX = x;
-    lastY = y;
+    draw(touch.clientX - rect.left, touch.clientY - rect.top);
 }, { passive: false });
-
-canvas.addEventListener("touchend", () => {
-    drawing = false;
-});
+canvas.addEventListener("touchend", endDraw);
 
 // ابزارها
 document.getElementById("colorPicker").addEventListener("change", (e) => {
@@ -91,23 +91,43 @@ document.getElementById("thickness").addEventListener("input", (e) => {
 
 document.getElementById("clear").addEventListener("click", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    svgPaths = [];
 });
 
 document.getElementById("download").addEventListener("click", () => {
-    const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const tempCtx = tempCanvas.getContext("2d");
+    const format = document.getElementById("format").value;
 
-    // پس‌زمینه سفید
-    tempCtx.fillStyle = "#ffffff";
-    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    if (format === "svg") {
+        const width = canvas.offsetWidth;
+        const height = canvas.offsetHeight;
 
-    // کپی امضا
-    tempCtx.drawImage(canvas, 0, 0);
+        const svgContent = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+    ${svgPaths.map(path =>
+            `<path d="${path.d}" stroke="${path.color}" stroke-width="${path.width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+        ).join("\n")}
+</svg>`;
 
-    const link = document.createElement("a");
-    link.download = "signature.png";
-    link.href = tempCanvas.toDataURL("image/png");
-    link.click();
+        const blob = new Blob([svgContent], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "signature.svg";
+        link.click();
+        URL.revokeObjectURL(url);
+    } else {
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext("2d");
+
+        tempCtx.fillStyle = "#ffffff";
+        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        tempCtx.drawImage(canvas, 0, 0);
+
+        const link = document.createElement("a");
+        link.download = `signature.${format}`;
+        link.href = tempCanvas.toDataURL(`image/${format}`);
+        link.click();
+    }
 });
