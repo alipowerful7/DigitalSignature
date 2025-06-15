@@ -45,12 +45,31 @@ canvas {
     max-height: 70vh;
 }
 
+/* ساختار ابزارها */
+
 .tools {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+}
+
+/* هر ردیف ابزار در یک خط */
+
+.tools-row {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
     justify-content: center;
     align-items: center;
+    width: 100%;
+}
+
+/* دکمه‌ها در یک خط و وسط چین */
+
+.buttons-row {
+    justify-content: center;
 }
 
 label,
@@ -64,6 +83,8 @@ button {
     transition: background 0.3s;
     user-select: none;
     font-size: 1.1rem;
+    display: flex;
+    align-items: center;
 }
 
 label:hover,
@@ -82,6 +103,7 @@ select {
 }
 
 /* استایل مدرن برای select */
+
 .custom-select {
     appearance: none;
     background-color: rgba(255, 255, 255, 0.15);
@@ -113,7 +135,14 @@ select option {
     font-size: 1rem;
 }
 
-/* ریسپانسیو برای صفحه‌های کوچک */
+/* کلاس برای مخفی کردن عناصر */
+
+.hidden {
+    display: none !important;
+}
+
+/* ریسپانسیو */
+
 @media (max-width: 600px) {
     .container {
         padding: 1rem;
@@ -127,5 +156,10 @@ select option {
     button {
         font-size: 1rem;
         padding: 0.4rem 1rem;
+    }
+
+    .tools-row {
+        flex-direction: column;
+        align-items: stretch;
     }
 }

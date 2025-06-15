@@ -13,7 +13,7 @@ let currentPath = "";
 // تصویر پس‌زمینه بارگذاری شده
 let bgImage = null;
 
-// عناصر جدید برای تاریخ و زمان
+// عناصر تاریخ و ساعت
 const showDateTimeCheckbox = document.getElementById("showDateTime");
 const positionLabel = document.getElementById("positionLabel");
 const dateTimePositionSelect = document.getElementById("dateTimePosition");
@@ -37,7 +37,6 @@ function resizeCanvas() {
 }
 
 function redrawAll() {
-    // ابتدا پس‌زمینه سفید یا تصویر را رسم می‌کنیم
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (bgImage) {
@@ -47,7 +46,6 @@ function redrawAll() {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // سپس خطوط امضا را دوباره می‌کشیم
     svgPaths.forEach(path => {
         ctx.strokeStyle = path.color;
         ctx.lineWidth = path.width;
@@ -162,8 +160,8 @@ document.getElementById("bgUpload").addEventListener("change", (e) => {
 // کنترل نمایش select موقعیت و انتخاب رنگ تاریخ با تغییر چک‌باکس
 showDateTimeCheckbox.addEventListener("change", () => {
     const checked = showDateTimeCheckbox.checked;
-    positionLabel.style.display = checked ? "inline-block" : "none";
-    dateColorLabel.style.display = checked ? "inline-block" : "none";
+    positionLabel.classList.toggle("hidden", !checked);
+    dateColorLabel.classList.toggle("hidden", !checked);
 });
 
 // دانلود
