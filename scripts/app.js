@@ -130,12 +130,21 @@ document.getElementById("thickness").addEventListener("input", (e) => {
     ctx.lineWidth = penThickness;
 });
 document.getElementById("clear").addEventListener("click", () => {
+    // پاک کردن امضاها
     svgPaths = [];
+
+    // پاک کردن تصویر پس‌زمینه
     bgImage = null;
-    // پاک کردن بوم و پس زمینه سفید
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // پاک کردن وضعیت کشیدن
+    drawing = false;
+    currentPath = "";
+
+    // پاک کردن مقدار فایل آپلود شده برای امکان آپلود مجدد همان یا فایل جدید
+    document.getElementById("bgUpload").value = "";
+
+    // رندر مجدد (پس‌زمینه سفید)
+    redrawAll();
 });
 
 // بارگذاری تصویر پس زمینه
