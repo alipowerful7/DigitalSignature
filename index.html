@@ -4,13 +4,21 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>امضای دیجیتال</title>
+    <title>امضای دیجیتال با پس‌زمینه</title>
     <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
     <div class="container">
-        <h1>امضای دیجیتال</h1>
+        <h1>امضای دیجیتال با پس‌زمینه دلخواه</h1>
+
+        <!-- انتخاب تصویر پس‌زمینه -->
+        <label for="bgUpload"
+            style="cursor:pointer; background: rgba(255,255,255,0.1); padding:0.6rem 1.2rem; border-radius:8px; display:inline-block; color:white; margin-bottom:1rem;">
+            بارگذاری تصویر پس‌زمینه
+            <input type="file" id="bgUpload" accept="image/*" style="display:none;" />
+        </label>
+
         <canvas id="signature"></canvas>
 
         <div class="tools">

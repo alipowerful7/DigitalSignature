@@ -10,6 +10,9 @@ let penThickness = 4;
 let svgPaths = [];
 let currentPath = "";
 
+// تصویر پس‌زمینه بارگذاری شده
+let bgImage = null;
+
 function resizeCanvas() {
     const ratio = window.devicePixelRatio || 1;
     canvas.width = canvas.offsetWidth * ratio;
@@ -23,12 +26,23 @@ function resizeCanvas() {
     ctx.strokeStyle = penColor;
     ctx.lineWidth = penThickness;
 
-    // وقتی تغییر اندازه میدیم، برای جلوگیری از پاک شدن، می‌تونیم دوباره خطوط رو رسم کنیم:
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    redrawAllPaths();
+    redrawAll();
 }
 
-function redrawAllPaths() {
+function redrawAll() {
+    // ابتدا پس‌زمینه سفید یا تصویر را رسم می‌کنیم
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (bgImage) {
+        // اندازه تصویر رو به ابعاد canvas می‌کشیم (می‌توانید تغییر دهید برای حفظ نسبت)
+        ctx.drawImage(bgImage, 0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
+    } else {
+        // پس‌زمینه سفید اگر تصویری نیست
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // سپس خطوط امضا را دوباره می‌کشیم
     svgPaths.forEach(path => {
         ctx.strokeStyle = path.color;
         ctx.lineWidth = path.width;
@@ -116,14 +130,36 @@ document.getElementById("thickness").addEventListener("input", (e) => {
     ctx.lineWidth = penThickness;
 });
 document.getElementById("clear").addEventListener("click", () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     svgPaths = [];
+    bgImage = null;
+    // پاک کردن بوم و پس زمینه سفید
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+});
+
+// بارگذاری تصویر پس زمینه
+document.getElementById("bgUpload").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+        const img = new Image();
+        img.onload = function () {
+            bgImage = img;
+            redrawAll();
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
 });
 
 document.getElementById("download").addEventListener("click", () => {
     const format = document.getElementById("format").value;
 
     if (format === "svg") {
+        // دانلود SVG - در این حالت پس‌زمینه تصویر در SVG لحاظ نمی‌شود.
         const width = canvas.offsetWidth;
         const height = canvas.offsetHeight;
 
@@ -142,14 +178,37 @@ document.getElementById("download").addEventListener("click", () => {
         link.click();
         URL.revokeObjectURL(url);
     } else {
+        // دانلود به صورت PNG/JPEG/WebP همراه پس‌زمینه
         const tempCanvas = document.createElement("canvas");
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
         const tempCtx = tempCanvas.getContext("2d");
 
-        tempCtx.fillStyle = "#ffffff";
-        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-        tempCtx.drawImage(canvas, 0, 0);
+        // رسم پس زمینه
+        if (bgImage) {
+            tempCtx.drawImage(bgImage, 0, 0, tempCanvas.width, tempCanvas.height);
+        } else {
+            tempCtx.fillStyle = "#ffffff";
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        }
+
+        // رسم امضا
+        svgPaths.forEach(path => {
+            tempCtx.strokeStyle = path.color;
+            tempCtx.lineWidth = path.width;
+            tempCtx.beginPath();
+            const commands = path.d.match(/[ML][^ML]*/g);
+            commands.forEach(command => {
+                const type = command[0];
+                const coords = command.slice(2).split(" ").map(Number);
+                if (type === "M") {
+                    tempCtx.moveTo(coords[0], coords[1]);
+                } else if (type === "L") {
+                    tempCtx.lineTo(coords[0], coords[1]);
+                }
+            });
+            tempCtx.stroke();
+        });
 
         const link = document.createElement("a");
         link.download = `signature.${format}`;
