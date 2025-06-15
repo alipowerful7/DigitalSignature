@@ -59,6 +59,7 @@ canvas.addEventListener("mousedown", (e) => {
     startDraw(e.clientX - rect.left, e.clientY - rect.top);
 });
 document.addEventListener("mousemove", (e) => {
+    if (!drawing) return;
     const rect = canvas.getBoundingClientRect();
     draw(e.clientX - rect.left, e.clientY - rect.top);
 });
@@ -78,17 +79,14 @@ canvas.addEventListener("touchmove", (e) => {
 }, { passive: false });
 canvas.addEventListener("touchend", endDraw);
 
-// ابزارها
 document.getElementById("colorPicker").addEventListener("change", (e) => {
     penColor = e.target.value;
     ctx.strokeStyle = penColor;
 });
-
 document.getElementById("thickness").addEventListener("input", (e) => {
     penThickness = e.target.value;
     ctx.lineWidth = penThickness;
 });
-
 document.getElementById("clear").addEventListener("click", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     svgPaths = [];
@@ -103,7 +101,7 @@ document.getElementById("download").addEventListener("click", () => {
 
         const svgContent = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-    ${svgPaths.map(path =>
+  ${svgPaths.map(path =>
             `<path d="${path.d}" stroke="${path.color}" stroke-width="${path.width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
         ).join("\n")}
 </svg>`;
