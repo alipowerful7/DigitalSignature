@@ -5,7 +5,7 @@ let drawing = false;
 let lastX = 0;
 let lastY = 0;
 let penColor = "#000000";
-let penThickness = 2;
+let penThickness = 4;
 
 let svgPaths = [];
 let currentPath = "";
@@ -14,13 +14,39 @@ function resizeCanvas() {
     const ratio = window.devicePixelRatio || 1;
     canvas.width = canvas.offsetWidth * ratio;
     canvas.height = canvas.offsetHeight * ratio;
+
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(ratio, ratio);
+
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.strokeStyle = penColor;
     ctx.lineWidth = penThickness;
+
+    // وقتی تغییر اندازه میدیم، برای جلوگیری از پاک شدن، می‌تونیم دوباره خطوط رو رسم کنیم:
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    redrawAllPaths();
 }
+
+function redrawAllPaths() {
+    svgPaths.forEach(path => {
+        ctx.strokeStyle = path.color;
+        ctx.lineWidth = path.width;
+        ctx.beginPath();
+        const commands = path.d.match(/[ML][^ML]*/g);
+        commands.forEach(command => {
+            const type = command[0];
+            const coords = command.slice(2).split(" ").map(Number);
+            if (type === "M") {
+                ctx.moveTo(coords[0], coords[1]);
+            } else if (type === "L") {
+                ctx.lineTo(coords[0], coords[1]);
+            }
+        });
+        ctx.stroke();
+    });
+}
+
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
@@ -37,8 +63,10 @@ function draw(x, y) {
     ctx.moveTo(lastX, lastY);
     ctx.lineTo(x, y);
     ctx.stroke();
+
     lastX = x;
     lastY = y;
+
     currentPath += ` L ${x} ${y}`;
 }
 
