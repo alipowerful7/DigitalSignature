@@ -17,6 +17,8 @@ let bgImage = null;
 const showDateTimeCheckbox = document.getElementById("showDateTime");
 const positionLabel = document.getElementById("positionLabel");
 const dateTimePositionSelect = document.getElementById("dateTimePosition");
+const dateColorLabel = document.getElementById("dateColorLabel");
+const dateColorPicker = document.getElementById("dateColorPicker");
 
 function resizeCanvas() {
     const ratio = window.devicePixelRatio || 1;
@@ -157,9 +159,11 @@ document.getElementById("bgUpload").addEventListener("change", (e) => {
     reader.readAsDataURL(file);
 });
 
-// کنترل نمایش select موقعیت با تغییر چک‌باکس
+// کنترل نمایش select موقعیت و انتخاب رنگ تاریخ با تغییر چک‌باکس
 showDateTimeCheckbox.addEventListener("change", () => {
-    positionLabel.style.display = showDateTimeCheckbox.checked ? "inline-block" : "none";
+    const checked = showDateTimeCheckbox.checked;
+    positionLabel.style.display = checked ? "inline-block" : "none";
+    dateColorLabel.style.display = checked ? "inline-block" : "none";
 });
 
 // دانلود
@@ -220,7 +224,7 @@ document.getElementById("download").addEventListener("click", () => {
 
         // درج تاریخ و ساعت امضا به صورت فارسی اگر فعال باشد
         if (showDateTimeCheckbox.checked) {
-            tempCtx.fillStyle = "black";
+            tempCtx.fillStyle = dateColorPicker.value || "black";
             tempCtx.font = "16px Vazirmatn, sans-serif";
             tempCtx.textBaseline = "top";
 

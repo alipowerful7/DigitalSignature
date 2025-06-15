@@ -29,7 +29,7 @@
 
             <label>
                 ضخامت:
-                <input type="range" id="thickness" min="1" max="10" value="4" />
+                <input type="range" id="thickness" min="1" max="10" value="3" />
             </label>
 
             <label class="custom-select-wrapper">
@@ -55,6 +55,11 @@
                     <option value="bottom-right" selected>پایین راست</option>
                     <option value="bottom-left">پایین چپ</option>
                 </select>
+            </label>
+
+            <label id="dateColorLabel" style="display:none;">
+                رنگ تاریخ و ساعت:
+                <input type="color" id="dateColorPicker" value="#000000" />
             </label>
 
             <button id="clear">پاک کردن</button>
